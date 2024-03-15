@@ -197,8 +197,22 @@ def main():
                     plt.ylabel(target_variable)
                     st.pyplot(plt)
 
-            else:
-                st.write("No columns have high correlation (> 0.6 or < -0.6) with the selected target variable.")
+                # Allow user to predict target values
+                    st.subheader("🔮 Predict Your Destiny:")
+                    st.write("Enter the essence of your desires through the mystical veil of independent variables, and witness the revelation of your destined outcome.")
+
+                # Create input fields for each feature
+                input_values = {}
+                for col in high_correlation_cols:
+                    input_values[col] = st.number_input(f"{col}:", value=0.0)
+
+                # Predict target value based on user input
+                if st.button("Unveil Your Fortune"):
+                    input_features = [input_values[col] for col in high_correlation_cols]
+                    predicted_value = best_model.predict([input_features])
+                    st.write(f"As the mystic currents align, behold! The Oracle reveals your prophesied {target_variable}: {predicted_value[0]}")
+                else:
+                    st.write("Alas, it seems none of the mystical columns possess the magical connection required to influence the chosen target variable. Fear not, dear adventurer! Let us embark on another quest to uncover the hidden gems within the dataset.")
 
 if __name__ == "__main__":
     main()
