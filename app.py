@@ -1,6 +1,6 @@
 import seaborn as sns
 import streamlit as st
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder, OrdinalEncoder
+from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.tree import DecisionTreeRegressor
@@ -9,7 +9,17 @@ from sklearn.metrics import mean_squared_error, r2_score
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import pickle
+import joblib
+
+def remove_outliers(df, cols):
+    for col in cols:
+        q1 = df[col].quantile(0.25)
+        q3 = df[col].quantile(0.75)
+        iqr = q3 - q1
+        lower_bound = q1 - (1.5 * iqr)
+        upper_bound = q3 + (1.5 * iqr)
+        df = df[(df[col] >= lower_bound) & (df[col] <= upper_bound)]
+    return df
 
 def main():
     st.title("👻 Dataset Exploration and Modeling App 👻")
@@ -72,6 +82,10 @@ def main():
 
         for col in categorical_cols:
             df[col] = df[col].fillna(df[col].mode().iloc[0])
+
+        # Remove outliers
+        st.write("Removing outliers...")
+        df = remove_outliers(df, numeric_cols)
 
         # Apply label encoding to categorical columns
         label_encoder = OrdinalEncoder()
@@ -165,12 +179,12 @@ def main():
                     st.write("The best model does not have an intercept or coefficients.")
 
                 # Save the best model
-                with open("best_model.pkl", "wb") as file:
-                    pickle.dump(best_model, file)
+                model_filename = "best_model.joblib"
+                joblib.dump(best_model, model_filename)
 
                 # Provide download link for the model
                 st.write("But wait, there's more! I'll save your winning model to a file, and even provide a handy download link, so you can take it with you wherever you go. 📥")
-                st.markdown(f'[<span class="downloadLink">Download Trained Model</span>](best_model.pkl)', unsafe_allow_html=True)
+                st.markdown(f'[<span class="downloadLink">Download Trained Model</span>]({model_filename})', unsafe_allow_html=True)
 
                 # Visualize model performance
                 st.subheader("Model Performance Visualization")
